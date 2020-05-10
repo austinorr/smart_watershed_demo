@@ -1,3 +1,5 @@
+import time
+
 from flask import render_template, request, jsonify, make_response, flash, url_for, redirect
 import pandas
 import numpy
@@ -15,6 +17,10 @@ def ts_builder():
     """
     if request.args:
         kwargs = {k: float(v) for k, v in request.args.items()}
+
+        delay = kwargs.get('delay', 0)
+        if delay > 0:
+            time.sleep(delay)
         data = build_timeseries(**kwargs)
 
         chart_spec = None

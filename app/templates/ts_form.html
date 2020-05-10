@@ -1,0 +1,29 @@
+<form action="/timeseries" id="ts-form" method="get" enctype="text/plain">
+    
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div >
+        <input type="number" name ="start" id="start" value='0' step='0.01'/>
+        <label for="start">Start</label>
+    </div>
+    <div >
+        <input type="number" name ="stop" id="stop" value='100' step='0.01'/>
+        <label for="stop">Stop</label>
+    </div>
+    <div >
+        <input type="number" name ="n_points" id="n_points" value='100'>
+        <label for="n_points">Number of points</label>
+    </div>
+    <div >
+        <input type="number" name ="amplitude" id="amplitude" value='5.00' step='0.01'/>
+        <label for="amplitude">Amplitude</label>
+    </div>
+    <div >
+        <input type="number" name ="frequency" id="frequency" value='1.00' step='0.01'/>
+        <label for="frequency">Frequency</label>
+    </div>
+
+    <div>
+        <button type="submit">submit</button>
+    </div>
+
+</form>

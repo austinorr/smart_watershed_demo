@@ -11,11 +11,34 @@ from . import timeseries
 
 
 @timeseries.route('/timeseries/', methods=['GET'])
-def ts_builder():
+def timeseries_ui():
     """
     Render the homepage template on the / route
     """
-    if request.args:
+
+    return render_template("timeseries.html", title='Timeseries Builder')
+
+@timeseries.route('/timeseries/api', methods=['GET'])
+def timeseries_builder():
+    """
+    Render the homepage template on the / route
+    """
+
+    chart_spec = None
+    chart_status = None
+    msg = None
+
+    response = {
+        'spec': chart_spec,
+        'chart_status': chart_status,
+        'message': msg
+    }
+
+    if not request.args:
+        response['message'] = "No data in request"
+        return make_response(jsonify(response), 200)
+
+    else:
         kwargs = {k: float(v) for k, v in request.args.items()}
 
         delay = kwargs.get('delay', 0)
@@ -23,9 +46,7 @@ def ts_builder():
             time.sleep(delay)
         data = build_timeseries(**kwargs)
 
-        chart_spec = None
-        chart_status = None
-        msg = None
+
         try:
             chart_spec = make_chart(data).to_json()
             chart_status = "SUCCESS"
@@ -41,9 +62,6 @@ def ts_builder():
         }
 
         return make_response(jsonify(response), 200)
-
-
-    return render_template("timeseries.html", title='Timeseries Builder')
 
 
 def build_timeseries(*, start=0, stop=100, n_points=100, amplitude=1, frequency=1, **kwargs):

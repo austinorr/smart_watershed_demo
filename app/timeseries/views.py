@@ -79,7 +79,7 @@ def build_timeseries(
     source = pandas.DataFrame(
         {
             "x": x,
-            "f(x)": (
+            "y": (
                 offset
                 + (trend * x)
                 + (noise * numpy.random.uniform(-1, 1, size=x.shape))
@@ -93,12 +93,12 @@ def build_timeseries(
 
 def make_chart(src):
     brush = alt.selection(type="interval", encodings=["x", "y"])
-    color = alt.Color("f(x):O", legend=None)
+    color = alt.Color("y:O", legend=None)
 
     line = (
         alt.Chart(src)
         .mark_line(interpolate="natural", color="lightblue", size=2)
-        .encode(x=alt.X("x", title="Days"), y=alt.Y("f(x)", title="Flowrate cfs"))
+        .encode(x=alt.X("x", title="Days"), y=alt.Y("y", title="Flowrate cfs"))
     )
 
     points = (
@@ -106,33 +106,30 @@ def make_chart(src):
         .mark_point()
         .encode(
             x="x",
-            y="f(x)",
+            y="y",
             color=alt.condition(brush, color, alt.value("lightgray")),
             tooltip=[
-                alt.Tooltip("f(x):Q", format=".2f", title='Flowrate'),
-                alt.Tooltip("x:Q", format=".1f", title='Day'),
-            ]
+                alt.Tooltip("y:Q", format=".2f", title="Flowrate"),
+                alt.Tooltip("x:Q", format=".1f", title="Day"),
+            ],
         )
         .add_selection(brush)
     )
 
     avg_line = (
         alt.Chart(src)
-        .mark_rule(color="firebrick")
-        .encode(y="mean(f(x)):Q", size=alt.SizeValue(3),)
+        .mark_rule(color="grey", opacity=0.5)
+        .encode(y="mean(y):Q", size=alt.SizeValue(3),)
         .transform_filter(brush)
     )
+
+    fit_line = line.transform_regression("x", "y").mark_line(color="firebrick")
 
     text = (
-        alt.Chart(src, width=30)
-        .mark_text(align="center", baseline="bottom", dy=-3,)
-        .encode(
-            y=alt.Y("mean(f(x)):Q", axis=None),
-            text=alt.Text("mean(f(x)):Q", format=".2f"),
-        )
+        alt.Chart(src)
+        .mark_text(align="left", baseline="middle", x="width", dx=7,)
+        .encode(y="mean(y):Q", text=alt.Text("mean(y):Q", format=".2f"))
         .transform_filter(brush)
     )
 
-    return alt.hconcat(line + points + avg_line, text + avg_line).resolve_scale(
-        y="shared"
-    )
+    return avg_line + line + points + fit_line + text
